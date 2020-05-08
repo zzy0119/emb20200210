@@ -3,6 +3,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <pwd.h>
+#include <grp.h>
+#include <time.h>
 
 int main(int argc, char *argv[])
 {
@@ -55,10 +57,34 @@ int main(int argc, char *argv[])
 	}
 	printf("%s ", pwd->pw_name);
 	// 文件所属组 man 5 group getgrgid(3)
+	struct group *grp;
 
+	grp = getgrgid(res.st_gid);
+	if (NULL == grp) {
+		perror("getgrgid()");
+		return 1;
+	}
+	printf("%s ", grp->gr_name);
+
+	// 文件字节个数
+	printf("%ld ", res.st_size);
+
+	// atime ctime mtime
+	struct tm *tmp;
+	tmp = localtime(&res.st_mtim.tv_sec);
+	if (NULL == tmp) {
+		return 1;
+	}
+	char tmbuf[100] = {};
+	// strftime(tmbuf, 100, "%Y-%m-%d %H:%M:%S", tmp);
+	strftime(tmbuf, 100, "%m  %d %H:%M", tmp);
+	printf("%s ", tmbuf);
+
+	printf("%s ", argv[1]);
+	
 	putchar('\n');
-
 
 	return 0;
 }
+
 
