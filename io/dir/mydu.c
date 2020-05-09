@@ -33,12 +33,13 @@ int mydu_blocks(const char *path)
 	}
 	// 是否是目录文件
 	if (!S_ISDIR(res.st_mode)) {
-		puts(path);
+		printf("%ld %s\n", res.st_blocks, path);
 		return res.st_blocks;	
 	}
 	// 是目录－－－》读目录
-	puts(path);
+	printf("%ld %s\n", res.st_blocks, path);
 	sum = res.st_blocks;// 目录本身
+	printf("目录%ldK\n", res.st_blocks);
 	dp = opendir(path);
 	if (NULL == dp) {
 		perror("opendir()");
