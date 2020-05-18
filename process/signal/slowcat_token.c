@@ -6,6 +6,7 @@
 #include <signal.h>
 
 #define CPS		10
+#define BURST	100
 #define BUFSIZE	10
 
 static int token;
@@ -13,7 +14,9 @@ static int token;
 static void handler(int s)
 {
 	alarm(1);
-	token = 1;
+	token += CPS;
+	if (token >= BURST)
+		token = BURST;
 }
 
 int main(int argc, char *argv[])
@@ -28,15 +31,10 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 		return 1;
 
-	while (1) {
-		fd = open(argv[1], O_RDONLY);
-		if (fd == -1) {
-			if (errno == EINTR)
-				continue;
-			fprintf(stderr, "open() error\n");
-			return 1;
-		}
-		break;
+	fd = open(argv[1], O_RDONLY);
+	if (fd == -1) {
+		fprintf(stderr, "open() error\n");
+		return 1;
 	}
 	
 	while (1) {
@@ -44,7 +42,7 @@ int main(int argc, char *argv[])
 			// 没有权限读写
 			pause();
 		}
-		token = 0;
+		token -= CPS;
 		cnt = read(fd, buf, BUFSIZE);	
 		if (cnt == 0)
 			break;
