@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
+#include <errno.h>
 
 #define CPS		10
 #define BUFSIZE	10
@@ -21,8 +22,15 @@ int main(int argc, char *argv[])
 	int fd;
 	char buf[BUFSIZE] = {};
 	int cnt;
+	struct sigaction act, oldact;
 
-	signal(SIGALRM, handler);
+//	signal(SIGALRM, handler);
+	
+	act.sa_handler = handler;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+	sigaction(SIGALRM, &act, &oldact);
+
 	alarm(1);
 
 	if (argc < 2)
