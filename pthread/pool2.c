@@ -9,6 +9,7 @@
 
 static int job; // 任务变量 0无任务 >0已分配任务 -1所有任务发放完成
 pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 static int isprimer(int n)
 {
@@ -27,16 +28,16 @@ static void *thr_job(void *arg)
 
 	while (1) {
 		pthread_mutex_lock(&mut);
+		while (job == 0) {
+			pthread_cond_wait(&cond, &mut);
+		}
 		if (job == -1) {
 			pthread_mutex_unlock(&mut);
 			pthread_exit((void *)0);
 		}
-		if (job == 0) {
-			pthread_mutex_unlock(&mut);
-			continue;
-		}
 		num = job;
 		job = 0;
+		pthread_cond_broadcast(&cond);
 		pthread_mutex_unlock(&mut);
 		if (isprimer(num)) {
 			printf("[%d]%d is a primer\n", id, num);
@@ -61,26 +62,27 @@ int main(void)
 	for (int i = START; i <= END; i++) {
 		pthread_mutex_lock(&mut);
 		while (job != 0) {
-			pthread_mutex_unlock(&mut);
-			pthread_mutex_lock(&mut);
+			pthread_cond_wait(&cond, &mut);
 		}
 		job = i;
+		pthread_cond_broadcast(&cond);
 		pthread_mutex_unlock(&mut);
 	}
 
 	// 所有任务发放完成
 	pthread_mutex_lock(&mut);
 	while (job > 0) {
-		pthread_mutex_unlock(&mut);
-		pthread_mutex_lock(&mut);
+		pthread_cond_wait(&cond, &mut);
 	}
 	job = -1;
+	pthread_cond_broadcast(&cond);
 	pthread_mutex_unlock(&mut);
 
 	for (int i = 0; i < THRNR; i++)
 		pthread_join(tids[i], NULL);
 
 	pthread_mutex_destroy(&mut);	
+	pthread_cond_destroy(&cond);
 
 	exit(0);
 }
