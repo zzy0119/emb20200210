@@ -1,6 +1,8 @@
 #ifndef __POOL_H
 #define __POOL_H
 
+#include "queue.h"
+
 #define MIN_FREETHR_NUM	5
 
 // 线程池任务
@@ -22,7 +24,7 @@ typedef struct {
 	pthread_cond_t queue_not_full;
 	// 线程数组
 	pthread_t *threads;
-	pthread_t *admin_tid;// 管理者线程
+	pthread_t admin_tid;// 管理者线程
 
 	// 线程池属性
 	int min_thr_num; // 池中至少的线程数
