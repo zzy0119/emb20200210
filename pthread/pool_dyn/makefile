@@ -1,4 +1,4 @@
 
-pool:pool.c queue.c
+pool:main.c pool.c queue.c
 	gcc -o $@ $^ -pthread
 
