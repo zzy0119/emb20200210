@@ -2,7 +2,7 @@
 
 using namespace std;
 
-class Student {
+struct Student {
 	public:
 		Student(char *name, int age);
 	public:
